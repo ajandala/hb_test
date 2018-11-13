@@ -4,5 +4,4 @@
 .classpath
 target
 build
-*.java
 *.jar
