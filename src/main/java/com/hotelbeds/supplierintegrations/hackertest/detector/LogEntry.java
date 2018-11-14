@@ -29,7 +29,6 @@ public class LogEntry {
         return dateTime;
     }
 
-
     public LoginAction getLoginAction() {
         return loginAction;
     }
