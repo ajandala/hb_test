@@ -2,7 +2,7 @@ package com.hotelbeds.supplierintegrations.hackertest.detector.counter;
 
 import java.time.LocalDateTime;
 
-class FailedLoginAttempts  {
+class FailedLoginAttempts {
 
     private int attempts = 1;
 
@@ -13,17 +13,19 @@ class FailedLoginAttempts  {
     }
 
 
-    public int getFailedAttemptsWithinTimeWindow(LocalDateTime lastAttempt, int timeWindowInMinutes) {
+    public synchronized int getFailedAttemptsCountWithinTimeWindow(LocalDateTime lastAttempt, int timeWindowInMinutes) {
 
         if (firstAttempt.isBefore(lastAttempt) && firstAttempt.plusMinutes(timeWindowInMinutes).isAfter(lastAttempt)) {
             attempts++;
-            System.out.println("-----------------> Within range, increase");
         } else {
-            System.out.println("-----------------> Out of range, set to 1");
             attempts = 1;
             firstAttempt = lastAttempt;
         }
 
         return attempts;
+    }
+
+    public synchronized boolean firstAttemptIsOlderThan(LocalDateTime timeStamp, int timeWindowInMinutes) {
+        return firstAttempt.plusMinutes(timeWindowInMinutes).isBefore(timeStamp);
     }
 }

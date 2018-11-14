@@ -1,13 +1,11 @@
 package com.hotelbeds.supplierintegrations.hackertest.detector;
 
 import com.hotelbeds.supplierintegrations.hackertest.detector.counter.AttemptCounter;
+import com.hotelbeds.supplierintegrations.hackertest.detector.model.LogEntry;
 import com.hotelbeds.supplierintegrations.hackertest.detector.parser.LogEntryParser;
 import com.hotelbeds.supplierintegrations.hackertest.detector.parser.LogEntryParserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class HackerDetectorImpl implements HackerDetector {
@@ -22,11 +20,6 @@ public class HackerDetectorImpl implements HackerDetector {
         this.attemptCounter = attemptCounter;
     }
 
-    //TODO properties
-    //TODO concurrency
-    //TODO memory problem
-    //TODO fixing test context
-    //TODO java 8 feature???
     public String parseLine(String line) {
 
         LogEntry logEntry = logEntryParser.parse(line);
@@ -38,16 +31,12 @@ public class HackerDetectorImpl implements HackerDetector {
         }
     }
 
-    public void init() {
+    void init() {
         attemptCounter.init();
     }
 
-    public static void main(String[] args) {
-        List<String> strings = new ArrayList<>();
-
-        strings.add(null);
-
-        System.out.println(strings.size());
+    int getAttemptCounterChacheSize() {
+        return attemptCounter.getAttemptCacheSize();
     }
 
 }

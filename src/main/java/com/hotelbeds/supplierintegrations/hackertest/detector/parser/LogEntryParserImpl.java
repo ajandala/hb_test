@@ -1,7 +1,7 @@
 package com.hotelbeds.supplierintegrations.hackertest.detector.parser;
 
-import com.hotelbeds.supplierintegrations.hackertest.detector.LogEntry;
-import com.hotelbeds.supplierintegrations.hackertest.detector.LogEntry.LoginAction;
+import com.hotelbeds.supplierintegrations.hackertest.detector.model.LogEntry;
+import com.hotelbeds.supplierintegrations.hackertest.detector.model.LogEntry.LoginAction;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -38,13 +38,13 @@ public class LogEntryParserImpl implements LogEntryParser {
         return stringTokenizer;
     }
 
-    private LocalDateTime parseEpoch(String epochInSecodns) {
+    private LocalDateTime parseEpoch(String epochInSeconds) {
 
         try {
-            long epochInMillis = Long.valueOf(epochInSecodns) * 1000;
+            long epochInMillis = Long.valueOf(epochInSeconds) * 1000;
             return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochInMillis), ZoneId.systemDefault());
         } catch (NumberFormatException e) {
-            throw new LogEntryParserException("Invalid epoch format: " + epochInSecodns, e);
+            throw new LogEntryParserException("Invalid epoch format: " + epochInSeconds, e);
         }
     }
 

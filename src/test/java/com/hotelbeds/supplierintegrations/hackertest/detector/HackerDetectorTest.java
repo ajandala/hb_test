@@ -6,13 +6,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppConfig.class)
 class HackerDetectorTest {
+
+    private static long currentEpoch = 1542110400;
 
     @Autowired
     private HackerDetector testSubject;
@@ -115,7 +116,6 @@ class HackerDetectorTest {
         assertEquals("80.238.9.179", result5);
     }
 
-    //TODO boundaries???
     @Test
     void fiveFailedLogEntriesFromSameIpWithinMoreThanFiveMinutes_returnNull() {
 
@@ -155,21 +155,21 @@ class HackerDetectorTest {
     @Test
     void fiveFailedLogEntriesFromSameIpWithinFiveMinutesByTwoThreads_returnIp() throws InterruptedException {
 
-        final List<String> resultsT1 = new ArrayList<>();
-        final List<String> resultsT2 = new ArrayList<>();
+        final List<String> results = Collections.synchronizedList(new ArrayList<>());
         CountDownLatch countDownLatch = new CountDownLatch(2);
 
         Thread t1 = new Thread(() -> {
-            resultsT1.add(testSubject.parseLine("80.238.9.179,1542110400,SIGNIN_FAILURE,Will.Smith"));
-            resultsT1.add(testSubject.parseLine("80.238.9.179,1542110460,SIGNIN_FAILURE,Will.Smith"));
+            for (int i = 0;  i < 2; i++){
+                results.add(testSubject.parseLine("80.238.9.179," + getNextEpoch() + ",SIGNIN_FAILURE,Will.Smith"));
+            }
 
             countDownLatch.countDown();
         });
 
         Thread t2 = new Thread(() -> {
-            resultsT2.add(testSubject.parseLine("80.238.9.179,1542110520,SIGNIN_FAILURE,Will.Smith"));
-            resultsT2.add(testSubject.parseLine("80.238.9.179,1542110580,SIGNIN_FAILURE,Will.Smith"));
-            resultsT2.add(testSubject.parseLine("80.238.9.179,1542110699,SIGNIN_FAILURE,Will.Smith"));
+            for (int i = 0;  i < 3; i++){
+                results.add(testSubject.parseLine("80.238.9.179," + getNextEpoch() + ",SIGNIN_FAILURE,Will.Smith"));
+            }
 
             countDownLatch.countDown();
         });
@@ -179,22 +179,25 @@ class HackerDetectorTest {
 
         countDownLatch.await();
 
-        assertNull(resultsT1.get(0));
-        assertNull(resultsT1.get(1));
-        assertNull(resultsT2.get(0));
-        assertNull(resultsT2.get(1));
-        assertEquals("80.238.9.179", resultsT2.get(2));
+        assertEquals("80.238.9.179", results.get(4));
 
     }
 
+    @Test
+    void memoryTest_oldEntriesShouldeBeDropped() {
 
-//------> NEW ATTEMPTS
-//-----------------> Within range, increase
-//------> NEW ATTEMPTS
-//------> AFTER CALCULATE ATTEMPTS: 2
-//-----------------> Within range, increase
-//-----------------> Within range, increase
-//------> AFTER CALCULATE ATTEMPTS: 3
-//------> AFTER CALCULATE ATTEMPTS: 3
+        String result1 = testSubject.parseLine("80.238.9.179,1542110400,SIGNIN_FAILURE,Will.Smith");
+        String result2 = testSubject.parseLine("80.238.9.180,1542110701,SIGNIN_FAILURE,Will.Smith");
+
+        assertNull(result1);
+        assertNull(result2);
+        assertEquals(1, ((HackerDetectorImpl)testSubject).getAttemptCounterChacheSize() );
+
+    }
+
+    private static String getNextEpoch() {
+
+        return String.valueOf(currentEpoch++);
+    }
 
 }
