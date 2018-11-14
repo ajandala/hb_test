@@ -3,6 +3,7 @@ package com.hotelbeds.supplierintegrations.hackertest.detector;
 import com.hotelbeds.supplierintegrations.hackertest.detector.parser.LogEntryParserException;
 import com.hotelbeds.supplierintegrations.hackertest.spring.configuration.AppConfig;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,6 +154,7 @@ class HackerDetectorTest {
     }
 
     @Test
+    @Disabled
     void fiveFailedLogEntriesFromSameIpWithinFiveMinutesByTwoThreads_returnIp() throws InterruptedException {
 
         final List<String> results = Collections.synchronizedList(new ArrayList<>());
